@@ -1,0 +1,9 @@
+{
+  "vulnerabilities": [
+    {
+      "packageName": "pino",
+      "severity": "high",
+      "title": "Example issue"
+    }
+  ]
+}

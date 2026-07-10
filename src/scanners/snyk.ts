@@ -14,17 +14,32 @@ type SnykReport = {
 const severities = new Set(['low', 'medium', 'high', 'critical']);
 
 export const snykScanner: ScannerAdapter = {
-  parse(report: unknown): SecurityFinding[] {
+  parse(report: unknown) {
     const reports = Array.isArray(report) ? report : [report];
+    const snykReports = reports.filter(isSnykReport);
 
-    return reports.flatMap((entry) => {
-      const vulnerabilities = (entry as SnykReport | undefined)?.vulnerabilities;
-      if (!Array.isArray(vulnerabilities)) return [];
+    if (snykReports.length !== reports.length) {
+      return { valid: false, findings: [] };
+    }
 
-      return vulnerabilities.flatMap((vulnerability) => toSecurityFinding(vulnerability));
-    });
+    return {
+      valid: true,
+      findings: snykReports.flatMap((entry) => {
+        const vulnerabilities = entry.vulnerabilities;
+        if (!Array.isArray(vulnerabilities)) return [];
+        return vulnerabilities.flatMap((vulnerability) => toSecurityFinding(vulnerability));
+      }),
+    };
   },
 };
+
+function isSnykReport(report: unknown): report is SnykReport {
+  if (!report || typeof report !== 'object') return false;
+  if (!('vulnerabilities' in report)) return false;
+
+  const vulnerabilities = (report as SnykReport).vulnerabilities;
+  return vulnerabilities === undefined || Array.isArray(vulnerabilities);
+}
 
 function toSecurityFinding(vulnerability: unknown): SecurityFinding[] {
   const snykVulnerability = vulnerability as SnykVulnerability;

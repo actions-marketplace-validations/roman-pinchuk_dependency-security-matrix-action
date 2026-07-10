@@ -40341,10 +40341,17 @@ async function readScannerFindings(inputs) {
     try {
         const scanner = (0,_scanners_index_js__WEBPACK_IMPORTED_MODULE_3__/* .getScannerAdapter */ .g)(inputs.scanner);
         const rawReport = await (0,node_fs_promises__WEBPACK_IMPORTED_MODULE_1__.readFile)(inputs.scannerReport, 'utf8');
-        return scanner.parse(JSON.parse(rawReport));
+        const result = scanner.parse(JSON.parse(rawReport));
+        if (!result.valid) {
+            return handleUnavailableScannerReport(inputs, `Scanner report does not match ${inputs.scanner} format.`);
+        }
+        return result.findings;
     }
     catch (error) {
         const message = error instanceof Error ? error.message : String(error);
+        if (message.startsWith('Unsupported scanner:')) {
+            throw new Error(message);
+        }
         return handleUnavailableScannerReport(inputs, `Could not parse scanner report: ${message}`);
     }
 }
@@ -40591,14 +40598,29 @@ const severities = new Set(['low', 'medium', 'high', 'critical']);
 const snykScanner = {
     parse(report) {
         const reports = Array.isArray(report) ? report : [report];
-        return reports.flatMap((entry) => {
-            const vulnerabilities = entry?.vulnerabilities;
-            if (!Array.isArray(vulnerabilities))
-                return [];
-            return vulnerabilities.flatMap((vulnerability) => toSecurityFinding(vulnerability));
-        });
+        const snykReports = reports.filter(isSnykReport);
+        if (snykReports.length !== reports.length) {
+            return { valid: false, findings: [] };
+        }
+        return {
+            valid: true,
+            findings: snykReports.flatMap((entry) => {
+                const vulnerabilities = entry.vulnerabilities;
+                if (!Array.isArray(vulnerabilities))
+                    return [];
+                return vulnerabilities.flatMap((vulnerability) => toSecurityFinding(vulnerability));
+            }),
+        };
     },
 };
+function isSnykReport(report) {
+    if (!report || typeof report !== 'object')
+        return false;
+    if (!('vulnerabilities' in report))
+        return false;
+    const vulnerabilities = report.vulnerabilities;
+    return vulnerabilities === undefined || Array.isArray(vulnerabilities);
+}
 function toSecurityFinding(vulnerability) {
     const snykVulnerability = vulnerability;
     if (typeof snykVulnerability.packageName !== 'string')

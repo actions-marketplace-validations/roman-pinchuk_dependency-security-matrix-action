@@ -1,0 +1,54 @@
+name: Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  action-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run action with Snyk report
+        id: security
+        uses: ./
+        with:
+          scanner: snyk
+          scanner-report: test/fixtures/security/snyk-results.json
+          manifest: test/fixtures/security/package.json
+          readme: test/fixtures/security/README.md
+          include-latest-version: 'false'
+
+      - name: Verify security outputs and README
+        run: |
+          test "${{ steps.security.outputs.updated }}" = "true"
+          test "${{ steps.security.outputs.scanner-used }}" = "snyk"
+          test "${{ steps.security.outputs.security-status-available }}" = "true"
+          test "${{ steps.security.outputs.issue-count }}" = "1"
+          grep -q "Security Status" test/fixtures/security/README.md
+          grep -q "1 high" test/fixtures/security/README.md
+
+      - name: Run action with invalid scanner report fallback
+        id: fallback
+        uses: ./
+        with:
+          scanner: snyk
+          scanner-report: test/fixtures/fallback/snyk-results.json
+          manifest: test/fixtures/fallback/package.json
+          readme: test/fixtures/fallback/README.md
+          include-latest-version: 'false'
+
+      - name: Verify fallback outputs and README
+        run: |
+          test "${{ steps.fallback.outputs.updated }}" = "true"
+          test "${{ steps.fallback.outputs.scanner-used }}" = "none"
+          test "${{ steps.fallback.outputs.security-status-available }}" = "false"
+          test "${{ steps.fallback.outputs.issue-count }}" = "0"
+          grep -q "Security status unavailable" test/fixtures/fallback/README.md
+          ! grep -q "Security Status" test/fixtures/fallback/README.md

@@ -1,0 +1,35 @@
+name: Bug report
+description: Report a problem with the action.
+title: 'bug: '
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow snippet
+      description: Include the relevant action usage without secrets.
+      render: yaml
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Include relevant logs without secrets.
+      render: text
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Action version
+      placeholder: v1.0.1
+    validations:
+      required: true

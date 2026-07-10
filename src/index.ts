@@ -64,9 +64,20 @@ async function readScannerFindings(inputs: ReturnType<typeof getInputs>): Promis
   try {
     const scanner = getScannerAdapter(inputs.scanner);
     const rawReport = await readFile(inputs.scannerReport, 'utf8');
-    return scanner.parse(JSON.parse(rawReport));
+    const result = scanner.parse(JSON.parse(rawReport));
+
+    if (!result.valid) {
+      return handleUnavailableScannerReport(inputs, `Scanner report does not match ${inputs.scanner} format.`);
+    }
+
+    return result.findings;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+
+    if (message.startsWith('Unsupported scanner:')) {
+      throw new Error(message);
+    }
+
     return handleUnavailableScannerReport(inputs, `Could not parse scanner report: ${message}`);
   }
 }
