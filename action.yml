@@ -79,5 +79,5 @@ outputs:
   issue-count:
     description: Total number of scanner findings included.
 runs:
-  using: node20
+  using: node24
   main: dist/index.js
