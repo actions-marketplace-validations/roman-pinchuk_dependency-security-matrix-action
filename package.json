@@ -1,0 +1,34 @@
+{
+  "name": "dependency-security-matrix-action",
+  "version": "1.0.0",
+  "description": "Generate a README dependency matrix with optional scanner-backed security status.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "ncc build src/index.ts --source-map --license licenses.txt",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "keywords": [
+    "github-action",
+    "dependencies",
+    "security",
+    "snyk",
+    "readme"
+  ],
+  "author": "Roman Pinchuk",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@vercel/ncc": "^0.38.3",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "undici": "^7.16.0"
+  }
+}

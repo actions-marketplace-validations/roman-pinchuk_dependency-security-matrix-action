@@ -1,0 +1,83 @@
+name: Dependency Security Matrix
+description: Generate a README dependency matrix with optional scanner-backed security status.
+author: Roman Pinchuk
+branding:
+  icon: shield
+  color: blue
+inputs:
+  scanner:
+    description: Security scanner report format. Currently supports snyk.
+    required: false
+    default: snyk
+  scanner-report:
+    description: Path to the scanner JSON report. If missing or invalid, fallback mode can generate a table without security status.
+    required: false
+    default: ''
+  scanner-report-required:
+    description: Fail when scanner-report is missing or invalid.
+    required: false
+    default: 'false'
+  fallback-without-scanner:
+    description: Generate dependency inventory when scanner data is unavailable.
+    required: false
+    default: 'true'
+  manifest:
+    description: Path to dependency manifest.
+    required: false
+    default: package.json
+  manifest-type:
+    description: Manifest ecosystem type. Currently supports npm.
+    required: false
+    default: npm
+  readme:
+    description: Markdown file to update.
+    required: false
+    default: README.md
+  start-marker:
+    description: Marker that starts the generated table region.
+    required: false
+    default: '<!-- START_MATRIX_TABLE -->'
+  end-marker:
+    description: Marker that ends the generated table region.
+    required: false
+    default: '<!-- END_MATRIX_TABLE -->'
+  include-dependencies:
+    description: Include production dependencies from the manifest.
+    required: false
+    default: 'true'
+  include-dev-dependencies:
+    description: Include development dependencies from the manifest.
+    required: false
+    default: 'true'
+  include-latest-version:
+    description: Fetch latest package versions from the package registry.
+    required: false
+    default: 'true'
+  include-status-note:
+    description: Include a note when scanner data is unavailable.
+    required: false
+    default: 'true'
+  heading:
+    description: Markdown heading for the generated matrix.
+    required: false
+    default: '## Dynamic Dependency & Security Matrix'
+  fail-on-missing-markers:
+    description: Fail when readme markers are missing.
+    required: false
+    default: 'true'
+outputs:
+  updated:
+    description: Whether the markdown file changed.
+  dependency-count:
+    description: Number of dependencies rendered.
+  latest-version-count:
+    description: Number of latest versions resolved.
+  scanner-used:
+    description: Scanner adapter used for parsing security findings.
+  security-status-available:
+    description: Whether security status was included in the generated table.
+  issue-count:
+    description: Total number of scanner findings included.
+runs:
+  using: node20
+  main: dist/index.js
