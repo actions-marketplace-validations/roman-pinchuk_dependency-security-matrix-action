@@ -37,4 +37,36 @@ describe('snykScanner', () => {
   it('marks unexpected report shapes as invalid', () => {
     expect(snykScanner.parse({ error: 'Invalid token' })).toEqual({ valid: false, findings: [] });
   });
+
+  it('attributes transitive vulnerabilities to the direct manifest package from the from path', () => {
+    const result = snykScanner.parse({
+      vulnerabilities: [
+        {
+          packageName: 'adm-zip',
+          severity: 'high',
+          title: 'Symlink Attack',
+          from: ['awesome-pw-template@1.0.0', 'allure@3.16.0', 'adm-zip@0.6.0'],
+        },
+        {
+          packageName: 'fast-uri',
+          severity: 'high',
+          title: 'Host Confusion',
+          from: [
+            'awesome-pw-template@1.0.0',
+            '@playwright/test@1.62.1',
+            'ctrf@0.2.1',
+            'fast-uri@3.1.6',
+          ],
+        },
+      ],
+    });
+
+    expect(result).toEqual({
+      valid: true,
+      findings: [
+        { packageName: 'allure', severity: 'high', title: 'Symlink Attack' },
+        { packageName: '@playwright/test', severity: 'high', title: 'Host Confusion' },
+      ],
+    });
+  });
 });

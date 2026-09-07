@@ -37477,15 +37477,35 @@ function isSnykReport(report) {
 }
 function toSecurityFinding(vulnerability) {
     const snykVulnerability = vulnerability;
-    if (typeof snykVulnerability.packageName !== 'string')
+    const targetPackage = resolveTargetPackage(snykVulnerability);
+    if (!targetPackage)
         return [];
     return [
         {
-            packageName: snykVulnerability.packageName,
+            packageName: targetPackage,
             severity: toSeverity(snykVulnerability.severity),
             title: typeof snykVulnerability.title === 'string' ? snykVulnerability.title : undefined,
         },
     ];
+}
+function resolveTargetPackage(vulnerability) {
+    if (Array.isArray(vulnerability.from) && vulnerability.from.length > 1) {
+        const directDep = vulnerability.from[1];
+        if (typeof directDep === 'string') {
+            return extractPackageName(directDep);
+        }
+    }
+    if (typeof vulnerability.packageName === 'string') {
+        return vulnerability.packageName;
+    }
+    return undefined;
+}
+function extractPackageName(specifier) {
+    const atIndex = specifier.lastIndexOf('@');
+    if (atIndex > 0) {
+        return specifier.slice(0, atIndex);
+    }
+    return specifier;
 }
 function toSeverity(value) {
     if (typeof value !== 'string' || !severities.has(value))
