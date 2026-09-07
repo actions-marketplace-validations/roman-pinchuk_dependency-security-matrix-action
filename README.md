@@ -141,6 +141,8 @@ with:
 | `include-latest-version` | `true` | Fetch latest versions from npm registry. |
 | `include-status-note` | `true` | Add a fallback note when security status is unavailable. |
 | `heading` | `## Dynamic Dependency & Security Matrix` | Generated table heading. |
+| `collapsed` | `false` | Wrap the table in a collapsible `<details>` element. |
+| `collapse-summary` | `Click to expand` | Summary text for the collapsible section when `collapsed` is true. |
 | `fail-on-missing-markers` | `true` | Fail if README markers are missing. |
 
 ## Outputs

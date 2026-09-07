@@ -61,6 +61,14 @@ inputs:
     description: Markdown heading for the generated matrix.
     required: false
     default: '## Dynamic Dependency & Security Matrix'
+  collapsed:
+    description: Wrap the matrix table in a collapsible details section.
+    required: false
+    default: 'false'
+  collapse-summary:
+    description: Summary text for the collapsible section when collapsed is true.
+    required: false
+    default: 'Click to expand'
   fail-on-missing-markers:
     description: Fail when readme markers are missing.
     required: false

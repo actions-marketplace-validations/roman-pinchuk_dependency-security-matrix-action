@@ -29,6 +29,8 @@ export async function run(): Promise<void> {
       includeLatestVersion: inputs.includeLatestVersion,
       includeStatusNote: inputs.includeStatusNote,
       securityStatusAvailable,
+      collapsed: inputs.collapsed,
+      collapseSummary: inputs.collapseSummary,
     });
 
     const currentReadme = await readFile(inputs.readme, 'utf8');

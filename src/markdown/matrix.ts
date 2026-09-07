@@ -8,6 +8,8 @@ type MatrixOptions = {
   includeLatestVersion: boolean;
   includeStatusNote: boolean;
   securityStatusAvailable: boolean;
+  collapsed?: boolean;
+  collapseSummary?: string;
 };
 
 const severityOrder: Array<NonNullable<SecurityFinding['severity']>> = [
@@ -34,7 +36,7 @@ export function generateMatrix(options: MatrixOptions): MatrixResult {
   if (options.securityStatusAvailable) headers.push('Security Status');
   if (options.includeLatestVersion) headers.push('Latest npm Version');
 
-  const lines = ['', options.heading, '', renderHeader(headers), renderAlignment(headers.length)];
+  const tableLines = [renderHeader(headers), renderAlignment(headers.length)];
 
   for (const dependency of options.dependencies) {
     const row = [
@@ -53,7 +55,16 @@ export function generateMatrix(options: MatrixOptions): MatrixResult {
       );
     }
 
-    lines.push(renderRow(row));
+    tableLines.push(renderRow(row));
+  }
+
+  const lines = ['', options.heading, ''];
+
+  if (options.collapsed) {
+    const summary = options.collapseSummary || 'Click to expand';
+    lines.push('<details>', `<summary>${summary}</summary>`, '', ...tableLines, '', '</details>');
+  } else {
+    lines.push(...tableLines);
   }
 
   if (!options.securityStatusAvailable && options.includeStatusNote) {

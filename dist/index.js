@@ -37130,6 +37130,8 @@ async function run() {
             includeLatestVersion: inputs.includeLatestVersion,
             includeStatusNote: inputs.includeStatusNote,
             securityStatusAvailable,
+            collapsed: inputs.collapsed,
+            collapseSummary: inputs.collapseSummary,
         });
         const currentReadme = await (0,node_fs_promises__WEBPACK_IMPORTED_MODULE_1__.readFile)(inputs.readme, 'utf8');
         const nextReadme = (0,_markdown_replace_js__WEBPACK_IMPORTED_MODULE_7__/* .replaceMarkedSection */ .S)(currentReadme, result.markdown, {
@@ -37215,6 +37217,8 @@ function getInputs() {
         includeLatestVersion: getBooleanInput('include-latest-version'),
         includeStatusNote: getBooleanInput('include-status-note'),
         heading: _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('heading') || '## Dynamic Dependency & Security Matrix',
+        collapsed: getBooleanInput('collapsed'),
+        collapseSummary: _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('collapse-summary') || 'Click to expand',
         failOnMissingMarkers: getBooleanInput('fail-on-missing-markers'),
     };
 }
@@ -37291,7 +37295,7 @@ function generateMatrix(options) {
         headers.push('Security Status');
     if (options.includeLatestVersion)
         headers.push('Latest npm Version');
-    const lines = ['', options.heading, '', renderHeader(headers), renderAlignment(headers.length)];
+    const tableLines = [renderHeader(headers), renderAlignment(headers.length)];
     for (const dependency of options.dependencies) {
         const row = [
             `**${escapeMarkdown(dependency.name)}**`,
@@ -37304,7 +37308,15 @@ function generateMatrix(options) {
         if (options.includeLatestVersion) {
             row.push(renderLatestVersion(dependency.requestedVersion, latestByPackage.get(dependency.name)));
         }
-        lines.push(renderRow(row));
+        tableLines.push(renderRow(row));
+    }
+    const lines = ['', options.heading, ''];
+    if (options.collapsed) {
+        const summary = options.collapseSummary || 'Click to expand';
+        lines.push('<details>', `<summary>${summary}</summary>`, '', ...tableLines, '', '</details>');
+    }
+    else {
+        lines.push(...tableLines);
     }
     if (!options.securityStatusAvailable && options.includeStatusNote) {
         lines.push('', '> Security status unavailable because no scanner report was provided or parsed.');

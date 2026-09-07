@@ -32,6 +32,8 @@ export type ActionInputs = {
   includeLatestVersion: boolean;
   includeStatusNote: boolean;
   heading: string;
+  collapsed: boolean;
+  collapseSummary: string;
   failOnMissingMarkers: boolean;
 };
 

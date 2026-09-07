@@ -17,6 +17,8 @@ export function getInputs(): ActionInputs {
     includeLatestVersion: getBooleanInput('include-latest-version'),
     includeStatusNote: getBooleanInput('include-status-note'),
     heading: core.getInput('heading') || '## Dynamic Dependency & Security Matrix',
+    collapsed: getBooleanInput('collapsed'),
+    collapseSummary: core.getInput('collapse-summary') || 'Click to expand',
     failOnMissingMarkers: getBooleanInput('fail-on-missing-markers'),
   };
 }
