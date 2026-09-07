@@ -137,7 +137,7 @@ function renderLatestVersion(requestedVersion: string, latestVersion: string | u
   if (isOutdated(requestedVersion, latestVersion)) {
     return `\`${latestVersion}\` ⚠️`;
   }
-  return `\`${latestVersion}\` 🟢`;
+  return `\`${latestVersion}\``;
 }
 
 function escapeMarkdown(value: string): string {

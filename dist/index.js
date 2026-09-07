@@ -37377,7 +37377,7 @@ function renderLatestVersion(requestedVersion, latestVersion) {
     if (isOutdated(requestedVersion, latestVersion)) {
         return `\`${latestVersion}\` ⚠️`;
     }
-    return `\`${latestVersion}\` 🟢`;
+    return `\`${latestVersion}\``;
 }
 function escapeMarkdown(value) {
     return value.replace(/\|/g, '\\|');
