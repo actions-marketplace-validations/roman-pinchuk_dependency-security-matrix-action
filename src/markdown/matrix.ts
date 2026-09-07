@@ -60,12 +60,11 @@ export function generateMatrix(options: MatrixOptions): MatrixResult {
 
   const lines = ['', options.heading, ''];
 
-  if (options.collapsed) {
-    const summary = options.collapseSummary || 'Click to expand';
-    lines.push('<details>', `<summary>${summary}</summary>`, '', ...tableLines, '', '</details>');
-  } else {
-    lines.push(...tableLines);
-  }
+  const tag = options.collapsed ? '<details>' : '<details open>';
+  const defaultSummary = options.collapsed ? 'Click to expand' : 'Click to collapse / expand';
+  const summary = options.collapseSummary?.trim() || defaultSummary;
+
+  lines.push(tag, `<summary>${summary}</summary>`, '', ...tableLines, '', '</details>');
 
   if (!options.securityStatusAvailable && options.includeStatusNote) {
     lines.push('', '> Security status unavailable because no scanner report was provided or parsed.');

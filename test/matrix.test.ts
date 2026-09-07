@@ -25,6 +25,8 @@ describe('generateMatrix', () => {
       securityStatusAvailable: true,
     });
 
+    expect(result.markdown).toContain('<details open>\n<summary>Click to collapse / expand</summary>');
+    expect(result.markdown).toContain('</details>');
     expect(result.markdown).toContain('| Dependency | Type | Current Version | Security Status | Latest npm Version |');
     expect(result.markdown).toContain('| **pino** | dependencies | `^10.0.0` | 🔴 1 high, 🟡 1 medium | `10.1.0` ⚠️ |');
     expect(result.markdown).toContain('| **@playwright/test** | devDependencies | `1.61.1` | 🟢 No known issues | `1.61.1` |');
@@ -44,6 +46,7 @@ describe('generateMatrix', () => {
       securityStatusAvailable: false,
     });
 
+    expect(result.markdown).toContain('<details open>\n<summary>Click to collapse / expand</summary>');
     expect(result.markdown).toContain('| Dependency | Type | Current Version | Latest npm Version |');
     expect(result.markdown).not.toContain('Security Status');
     expect(result.markdown).toContain('> Security status unavailable because no scanner report was provided or parsed.');

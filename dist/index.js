@@ -37218,7 +37218,7 @@ function getInputs() {
         includeStatusNote: getBooleanInput('include-status-note'),
         heading: _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('heading') || '## Dynamic Dependency & Security Matrix',
         collapsed: getBooleanInput('collapsed'),
-        collapseSummary: _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('collapse-summary') || 'Click to expand',
+        collapseSummary: _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .getInput */ .V4('collapse-summary'),
         failOnMissingMarkers: getBooleanInput('fail-on-missing-markers'),
     };
 }
@@ -37311,13 +37311,10 @@ function generateMatrix(options) {
         tableLines.push(renderRow(row));
     }
     const lines = ['', options.heading, ''];
-    if (options.collapsed) {
-        const summary = options.collapseSummary || 'Click to expand';
-        lines.push('<details>', `<summary>${summary}</summary>`, '', ...tableLines, '', '</details>');
-    }
-    else {
-        lines.push(...tableLines);
-    }
+    const tag = options.collapsed ? '<details>' : '<details open>';
+    const defaultSummary = options.collapsed ? 'Click to expand' : 'Click to collapse / expand';
+    const summary = options.collapseSummary?.trim() || defaultSummary;
+    lines.push(tag, `<summary>${summary}</summary>`, '', ...tableLines, '', '</details>');
     if (!options.securityStatusAvailable && options.includeStatusNote) {
         lines.push('', '> Security status unavailable because no scanner report was provided or parsed.');
     }
