@@ -37467,12 +37467,12 @@ const snykScanner = {
         }
         return {
             valid: true,
-            findings: snykReports.flatMap((entry) => {
+            findings: deduplicateFindings(snykReports.flatMap((entry) => {
                 const vulnerabilities = entry.vulnerabilities;
                 if (!Array.isArray(vulnerabilities))
                     return [];
                 return vulnerabilities.flatMap((vulnerability) => toSecurityFinding(vulnerability));
-            }),
+            })),
         };
     },
 };
@@ -37492,10 +37492,23 @@ function toSecurityFinding(vulnerability) {
     return [
         {
             packageName: targetPackage,
+            ...(typeof snykVulnerability.id === 'string' && { vulnerabilityId: snykVulnerability.id }),
             severity: toSeverity(snykVulnerability.severity),
             title: typeof snykVulnerability.title === 'string' ? snykVulnerability.title : undefined,
         },
     ];
+}
+function deduplicateFindings(findings) {
+    const seen = new Set();
+    return findings.filter((finding) => {
+        if (!finding.vulnerabilityId)
+            return true;
+        const key = `${finding.packageName}\u0000${finding.vulnerabilityId}`;
+        if (seen.has(key))
+            return false;
+        seen.add(key);
+        return true;
+    });
 }
 function resolveTargetPackage(vulnerability) {
     if (Array.isArray(vulnerability.from) && vulnerability.from.length > 1) {

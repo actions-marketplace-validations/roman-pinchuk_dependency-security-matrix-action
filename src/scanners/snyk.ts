@@ -2,6 +2,7 @@ import type { SecurityFinding } from '../types.js';
 import type { ScannerAdapter } from './scanner.js';
 
 type SnykVulnerability = {
+  id?: unknown;
   packageName?: unknown;
   severity?: unknown;
   title?: unknown;
@@ -25,11 +26,13 @@ export const snykScanner: ScannerAdapter = {
 
     return {
       valid: true,
-      findings: snykReports.flatMap((entry) => {
-        const vulnerabilities = entry.vulnerabilities;
-        if (!Array.isArray(vulnerabilities)) return [];
-        return vulnerabilities.flatMap((vulnerability) => toSecurityFinding(vulnerability));
-      }),
+      findings: deduplicateFindings(
+        snykReports.flatMap((entry) => {
+          const vulnerabilities = entry.vulnerabilities;
+          if (!Array.isArray(vulnerabilities)) return [];
+          return vulnerabilities.flatMap((vulnerability) => toSecurityFinding(vulnerability));
+        }),
+      ),
     };
   },
 };
@@ -50,10 +53,25 @@ function toSecurityFinding(vulnerability: unknown): SecurityFinding[] {
   return [
     {
       packageName: targetPackage,
+      ...(typeof snykVulnerability.id === 'string' && { vulnerabilityId: snykVulnerability.id }),
       severity: toSeverity(snykVulnerability.severity),
       title: typeof snykVulnerability.title === 'string' ? snykVulnerability.title : undefined,
     },
   ];
+}
+
+function deduplicateFindings(findings: SecurityFinding[]): SecurityFinding[] {
+  const seen = new Set<string>();
+
+  return findings.filter((finding) => {
+    if (!finding.vulnerabilityId) return true;
+
+    const key = `${finding.packageName}\u0000${finding.vulnerabilityId}`;
+    if (seen.has(key)) return false;
+
+    seen.add(key);
+    return true;
+  });
 }
 
 function resolveTargetPackage(vulnerability: SnykVulnerability): string | undefined {

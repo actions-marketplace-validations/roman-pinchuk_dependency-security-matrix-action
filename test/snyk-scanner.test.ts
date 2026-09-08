@@ -69,4 +69,37 @@ describe('snykScanner', () => {
       ],
     });
   });
+
+  it('deduplicates the same vulnerability reported through multiple paths', () => {
+    const result = snykScanner.parse({
+      vulnerabilities: [
+        {
+          id: 'SNYK-JS-FASTURI-19502854',
+          packageName: 'fast-uri',
+          severity: 'high',
+          title: 'Host Confusion',
+          from: ['app@1.0.0', 'playwright-ctrf-json-reporter@0.0.29', 'fast-uri@3.1.6'],
+        },
+        {
+          id: 'SNYK-JS-FASTURI-19502854',
+          packageName: 'fast-uri',
+          severity: 'high',
+          title: 'Host Confusion',
+          from: ['app@1.0.0', 'playwright-ctrf-json-reporter@0.0.29', 'ctrf@0.2.1', 'fast-uri@3.1.6'],
+        },
+      ],
+    });
+
+    expect(result).toEqual({
+      valid: true,
+      findings: [
+        {
+          packageName: 'playwright-ctrf-json-reporter',
+          vulnerabilityId: 'SNYK-JS-FASTURI-19502854',
+          severity: 'high',
+          title: 'Host Confusion',
+        },
+      ],
+    });
+  });
 });

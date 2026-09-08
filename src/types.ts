@@ -8,6 +8,7 @@ export type Dependency = {
 
 export type SecurityFinding = {
   packageName: string;
+  vulnerabilityId?: string;
   severity?: 'low' | 'medium' | 'high' | 'critical';
   title?: string;
 };
