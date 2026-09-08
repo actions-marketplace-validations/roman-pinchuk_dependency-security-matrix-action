@@ -78,7 +78,7 @@ jobs:
 With scanner data:
 
 <details open>
-<summary>Click to collapse / expand</summary>
+<summary>Click to collapse / expand (2 outdated, 1 vulnerability: 1 high)</summary>
 
 | Dependency | Type | Current Version | Security Status | Latest npm Version |
 | :--- | :--- | :--- | :--- | :--- |
@@ -92,7 +92,7 @@ With scanner data:
 Without scanner data:
 
 <details open>
-<summary>Click to collapse / expand</summary>
+<summary>Click to collapse / expand (2 outdated, security unavailable)</summary>
 
 | Dependency | Type | Current Version | Latest npm Version |
 | :--- | :--- | :--- | :--- |

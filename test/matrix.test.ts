@@ -25,7 +25,9 @@ describe('generateMatrix', () => {
       securityStatusAvailable: true,
     });
 
-    expect(result.markdown).toContain('<details open>\n<summary>Click to collapse / expand</summary>');
+    expect(result.markdown).toContain(
+      '<details open>\n<summary>Click to collapse / expand (1 outdated, 2 vulnerabilities: 1 high, 1 medium)</summary>',
+    );
     expect(result.markdown).toContain('</details>');
     expect(result.markdown).toContain('| Dependency | Type | Current Version | Security Status | Latest npm Version |');
     expect(result.markdown).toContain('| **pino** | dependencies | `^10.0.0` | 🔴 1 high, 🟡 1 medium | `10.1.0` ⚠️ |');
@@ -46,7 +48,9 @@ describe('generateMatrix', () => {
       securityStatusAvailable: false,
     });
 
-    expect(result.markdown).toContain('<details open>\n<summary>Click to collapse / expand</summary>');
+    expect(result.markdown).toContain(
+      '<details open>\n<summary>Click to collapse / expand (1 outdated, security unavailable)</summary>',
+    );
     expect(result.markdown).toContain('| Dependency | Type | Current Version | Latest npm Version |');
     expect(result.markdown).not.toContain('Security Status');
     expect(result.markdown).toContain('> Security status unavailable because no scanner report was provided or parsed.');
@@ -66,9 +70,43 @@ describe('generateMatrix', () => {
       collapseSummary: 'Dependencies overview',
     });
 
-    expect(result.markdown).toContain('<details>\n<summary>Dependencies overview</summary>');
+    expect(result.markdown).toContain(
+      '<details>\n<summary>Dependencies overview (1 outdated, security unavailable)</summary>',
+    );
     expect(result.markdown).toContain('</details>');
     expect(result.markdown).toContain('| **pino** | dependencies | `^10.0.0` | `10.1.0` ⚠️ |');
+  });
+
+  it('renders a clean insight when dependencies and scanner findings are current', () => {
+    const result = generateMatrix({
+      dependencies: [{ name: 'pino', requestedVersion: '10.1.0', scope: 'production' }],
+      findings: [],
+      latestVersions: [{ packageName: 'pino', version: '10.1.0' }],
+      heading: '## Matrix',
+      includeLatestVersion: true,
+      includeStatusNote: true,
+      securityStatusAvailable: true,
+    });
+
+    expect(result.markdown).toContain(
+      '<summary>Click to collapse / expand (0 outdated, no known vulnerabilities)</summary>',
+    );
+  });
+
+  it('omits outdated count when latest versions are disabled', () => {
+    const result = generateMatrix({
+      dependencies,
+      findings: [{ packageName: 'pino', severity: 'critical' }],
+      latestVersions: [],
+      heading: '## Matrix',
+      includeLatestVersion: false,
+      includeStatusNote: true,
+      securityStatusAvailable: true,
+    });
+
+    expect(result.markdown).toContain(
+      '<summary>Click to collapse / expand (1 vulnerability: 1 critical)</summary>',
+    );
   });
 });
 

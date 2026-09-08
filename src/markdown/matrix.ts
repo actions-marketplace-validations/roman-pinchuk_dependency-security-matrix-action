@@ -62,7 +62,7 @@ export function generateMatrix(options: MatrixOptions): MatrixResult {
 
   const tag = options.collapsed ? '<details>' : '<details open>';
   const defaultSummary = options.collapsed ? 'Click to expand' : 'Click to collapse / expand';
-  const summary = options.collapseSummary?.trim() || defaultSummary;
+  const summary = `${options.collapseSummary?.trim() || defaultSummary} (${renderInsights(options, latestByPackage)})`;
 
   lines.push(tag, `<summary>${summary}</summary>`, '', ...tableLines, '', '</details>');
 
@@ -121,6 +121,43 @@ function renderSecurityStatus(findings: SecurityFinding[]): string {
   return severityCounts.join(', ');
 }
 
+function renderInsights(
+  options: MatrixOptions,
+  latestByPackage: Map<string, string | undefined>,
+): string {
+  const insights: string[] = [];
+
+  if (options.includeLatestVersion) {
+    const outdatedCount = options.dependencies.filter((dependency) => {
+      const latestVersion = latestByPackage.get(dependency.name);
+      return latestVersion ? isOutdated(dependency.requestedVersion, latestVersion) : false;
+    }).length;
+
+    insights.push(`${outdatedCount} outdated`);
+  }
+
+  if (!options.securityStatusAvailable) {
+    insights.push('security unavailable');
+  } else if (options.findings.length === 0) {
+    insights.push('no known vulnerabilities');
+  } else {
+    const severityCounts = severityOrder
+      .map((severity) => {
+        const count = options.findings.filter((finding) => finding.severity === severity).length;
+        return count > 0 ? `${count} ${severity}` : undefined;
+      })
+      .filter((count): count is string => count !== undefined);
+    const unspecifiedCount = options.findings.filter((finding) => !finding.severity).length;
+
+    if (unspecifiedCount > 0) severityCounts.push(`${unspecifiedCount} unspecified`);
+    insights.push(
+      `${options.findings.length} ${options.findings.length === 1 ? 'vulnerability' : 'vulnerabilities'}: ${severityCounts.join(', ')}`,
+    );
+  }
+
+  return insights.join(', ');
+}
+
 function parseSemver(v: string): [number, number, number] | null {
   const match = v.match(/(\d+)\.(\d+)(?:\.(\d+))?/);
   if (!match || !match[1] || !match[2]) return null;
@@ -153,4 +190,3 @@ function renderLatestVersion(requestedVersion: string, latestVersion: string | u
 function escapeMarkdown(value: string): string {
   return value.replace(/\|/g, '\\|');
 }
-

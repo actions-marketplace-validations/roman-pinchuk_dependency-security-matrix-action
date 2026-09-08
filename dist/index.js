@@ -37313,7 +37313,7 @@ function generateMatrix(options) {
     const lines = ['', options.heading, ''];
     const tag = options.collapsed ? '<details>' : '<details open>';
     const defaultSummary = options.collapsed ? 'Click to expand' : 'Click to collapse / expand';
-    const summary = options.collapseSummary?.trim() || defaultSummary;
+    const summary = `${options.collapseSummary?.trim() || defaultSummary} (${renderInsights(options, latestByPackage)})`;
     lines.push(tag, `<summary>${summary}</summary>`, '', ...tableLines, '', '</details>');
     if (!options.securityStatusAvailable && options.includeStatusNote) {
         lines.push('', '> Security status unavailable because no scanner report was provided or parsed.');
@@ -37358,6 +37358,35 @@ function renderSecurityStatus(findings) {
     if (severityCounts.length === 0)
         return `⚠️ ${findings.length} issue${findings.length === 1 ? '' : 's'}`;
     return severityCounts.join(', ');
+}
+function renderInsights(options, latestByPackage) {
+    const insights = [];
+    if (options.includeLatestVersion) {
+        const outdatedCount = options.dependencies.filter((dependency) => {
+            const latestVersion = latestByPackage.get(dependency.name);
+            return latestVersion ? isOutdated(dependency.requestedVersion, latestVersion) : false;
+        }).length;
+        insights.push(`${outdatedCount} outdated`);
+    }
+    if (!options.securityStatusAvailable) {
+        insights.push('security unavailable');
+    }
+    else if (options.findings.length === 0) {
+        insights.push('no known vulnerabilities');
+    }
+    else {
+        const severityCounts = severityOrder
+            .map((severity) => {
+            const count = options.findings.filter((finding) => finding.severity === severity).length;
+            return count > 0 ? `${count} ${severity}` : undefined;
+        })
+            .filter((count) => count !== undefined);
+        const unspecifiedCount = options.findings.filter((finding) => !finding.severity).length;
+        if (unspecifiedCount > 0)
+            severityCounts.push(`${unspecifiedCount} unspecified`);
+        insights.push(`${options.findings.length} ${options.findings.length === 1 ? 'vulnerability' : 'vulnerabilities'}: ${severityCounts.join(', ')}`);
+    }
+    return insights.join(', ');
 }
 function parseSemver(v) {
     const match = v.match(/(\d+)\.(\d+)(?:\.(\d+))?/);
